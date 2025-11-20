@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>3D Model Gallery</title>
   <style>
     body {
@@ -42,15 +42,22 @@
     .thumb:hover {
       background: #333;
     }
+
+    input[type="file"] {
+      margin-bottom: 15px;
+      width: 100%;
+      padding: 5px;
+    }
   </style>
 </head>
 <body>
 
   <div id="sidebar">
     <h2>3D Gallery</h2>
-    <div>
-      <input type="file" id="fileInput" accept=".stl,.glb,.gltf" />
-    </div>
+    <!-- File upload -->
+    <input type="file" id="fileInput" accept=".stl,.glb,.gltf" />
+
+    <!-- Preloaded model buttons -->
     <div class="thumb" onclick="loadModel('model1.glb')">Model 1</div>
     <div class="thumb" onclick="loadModel('model2.glb')">Model 2</div>
     <div class="thumb" onclick="loadModel('model3.glb')">Model 3</div>
@@ -58,14 +65,18 @@
 
   <div id="viewer"></div>
 
+  <!-- Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.159/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/loaders/STLLoader.js"></script>
 
   <script>
     let scene, camera, renderer, controls;
+    let currentModel = null; // Track the loaded model
     const viewer = document.getElementById('viewer');
 
+    // Initialize scene
     function init() {
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x000000);
@@ -78,7 +89,9 @@
       viewer.appendChild(renderer.domElement);
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
 
+      // Add light
       const light = new THREE.DirectionalLight(0xffffff, 2);
       light.position.set(5, 5, 5);
       scene.add(light);
@@ -86,29 +99,87 @@
       animate();
     }
 
+    // Animation loop
     function animate() {
       requestAnimationFrame(animate);
+      controls.update();
       renderer.render(scene, camera);
     }
 
+    // Load preloaded model (GLTF/GLB)
     function loadModel(file) {
-      // Clear old model
-      while (scene.children.length > 1) {
-        scene.remove(scene.children[1]);
+      const loader = new THREE.GLTFLoader();
+
+      // Remove previous model
+      if (currentModel) {
+        scene.remove(currentModel);
       }
 
-      const loader = new THREE.GLTFLoader();
       loader.load(file, function (gltf) {
-        scene.add(gltf.scene);
+        currentModel = gltf.scene;
+        scene.add(currentModel);
+        centerAndZoom(currentModel);
       });
     }
 
+    // Center and zoom any object
+    function centerAndZoom(object) {
+      const box = new THREE.Box3().setFromObject(object);
+      const center = box.getCenter(new THREE.Vector3());
+      object.position.sub(center);
+
+      const size = box.getSize(new THREE.Vector3()).length();
+      camera.position.set(size * 1.5, size * 1.5, size * 1.5);
+      camera.lookAt(0, 0, 0);
+      controls.update();
+    }
+
+    // Handle file uploads
+    const stlLoader = new THREE.STLLoader();
+    const fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        // Remove previous model
+        if (currentModel) {
+          scene.remove(currentModel);
+        }
+
+        if (ext === 'stl') {
+          const geometry = stlLoader.parse(e.target.result);
+          const material = new THREE.MeshNormalMaterial();
+          currentModel = new THREE.Mesh(geometry, material);
+          scene.add(currentModel);
+          centerAndZoom(currentModel);
+        } else if (ext === 'glb' || ext === 'gltf') {
+          const gltfLoader = new THREE.GLTFLoader();
+          gltfLoader.parse(e.target.result, '', function(gltf) {
+            currentModel = gltf.scene;
+            scene.add(currentModel);
+            centerAndZoom(currentModel);
+          });
+        } else {
+          alert("Unsupported file type!");
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      camera.aspect = viewer.clientWidth / viewer.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(viewer.clientWidth, viewer.clientHeight);
+    });
+
     window.onload = init;
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
-<script src="https://threejs.org/examples/js/loaders/STLLoader.js"></script>
 
-<script src = "mainscript.js"></script>
 </body>
 </html>
