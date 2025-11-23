@@ -18,17 +18,17 @@
 <div id="sidebar">
   <h2>3D Gallery</h2>
   <input type="file" id="fileInput" accept=".stl,.glb,.gltf" />
-  <div class="thumb" onclick="loadModel('model1.glb')">Model 1</div>
+  <div class="thumb" onclick="loxadModel('model1.glb')">Model 1</div>
   <div class="thumb" onclick="loadModel('model2.glb')">Model 2</div>
   <div class="thumb" onclick="loadModel('model3.glb')">Model 3</div>
 </div>
 
 <div id="viewer"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.159/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/loaders/STLLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/loaders/STLLoader.js"></script>
 
 <script>
 let scene, camera, renderer, controls, currentModel = null;
