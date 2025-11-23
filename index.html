@@ -26,6 +26,17 @@
     position: relative;
   }
 
+  #emptyMessage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #888;
+    font-size: 28px;
+    text-align: center;
+    pointer-events: none;
+  }
+
   canvas {
     width: 100%;
     height: 100%;
@@ -43,12 +54,6 @@
   .thumb:hover {
     background: #333;
   }
-
-  input[type="file"] {
-    margin-bottom: 15px;
-    width: 100%;
-    padding: 5px;
-  }
 </style>
 </head>
 
@@ -57,24 +62,20 @@
 <div id="sidebar">
   <h2>3D Gallery</h2>
 
-  <!-- File upload -->
-  <input type="file" id="fileInput" accept=".stl,.glb,.gltf" />
-
   <!-- Preloaded models -->
   <div class="thumb" onclick="loadModel('model1.glb')">Model 1</div>
   <div class="thumb" onclick="loadModel('model2.glb')">Model 2</div>
   <div class="thumb" onclick="loadModel('model3.glb')">Model 3</div>
 </div>
 
-<div id="viewer"></div>
+<div id="viewer">
+  <div id="emptyMessage">Whoops! Nothing to see here!</div>
+</div>
 
 <!-- Three.js + Controls + Loaders -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.159/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.159/examples/js/loaders/STLLoader.js"></script>
-
-<!-- Your JavaScript -->
 <script src="mainscript.js"></script>
 
 </body>

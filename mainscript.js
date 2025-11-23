@@ -1,11 +1,18 @@
 let scene, camera, renderer, controls, currentModel = null;
-const viewer = document.getElementById('viewer');
+
+const viewer = document.getElementById("viewer");
+const emptyMessage = document.getElementById("emptyMessage");
 
 function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
 
-  camera = new THREE.PerspectiveCamera(60, viewer.clientWidth / viewer.clientHeight, 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(
+    60,
+    viewer.clientWidth / viewer.clientHeight,
+    0.1,
+    1000
+  );
   camera.position.set(2, 2, 2);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -40,52 +47,30 @@ function centerAndZoom(object) {
 }
 
 function loadModel(file) {
+  if (!file) {
+    emptyMessage.style.display = "block";
+    return;
+  }
+
+  emptyMessage.style.display = "none";
+
   const loader = new THREE.GLTFLoader();
+
   if (currentModel) scene.remove(currentModel);
 
-  loader.load(file, function (gltf) {
-    currentModel = gltf.scene;
-    scene.add(currentModel);
-    centerAndZoom(currentModel);
-  });
-}
-
-const stlLoader = new THREE.STLLoader();
-document.getElementById('fileInput').addEventListener('change', function (event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const ext = file.name.split('.').pop().toLowerCase();
-
-    if (currentModel) scene.remove(currentModel);
-
-    if (ext === 'stl') {
-      const geometry = stlLoader.parse(e.target.result);
-      const material = new THREE.MeshNormalMaterial();
-      currentModel = new THREE.Mesh(geometry, material);
+  loader.load(
+    file,
+    function (gltf) {
+      currentModel = gltf.scene;
       scene.add(currentModel);
       centerAndZoom(currentModel);
-    } else if (ext === 'glb' || ext === 'gltf') {
-      const gltfLoader = new THREE.GLTFLoader();
-      gltfLoader.parse(e.target.result, '', function (gltf) {
-        currentModel = gltf.scene;
-        scene.add(currentModel);
-        centerAndZoom(currentModel);
-      });
-    } else {
-      alert('Unsupported file type!');
+    },
+    undefined,
+    function (err) {
+      console.error("Error loading model:", err);
+      emptyMessage.style.display = "block";
     }
-  };
+  );
+}
 
-  reader.readAsArrayBuffer(file);
-});
-
-window.addEventListener('resize', () => {
-  camera.aspect = viewer.clientWidth / viewer.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(viewer.clientWidth, viewer.clientHeight);
-});
-
-window.onload = init();
+window.onload = init;
