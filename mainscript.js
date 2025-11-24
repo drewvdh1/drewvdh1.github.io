@@ -1,3 +1,4 @@
+// Import everything using ABSOLUTE URLs (solves the module specifier error)
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/controls/OrbitControls.js";
 import { STLLoader } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/STLLoader.js";
@@ -13,7 +14,7 @@ function initViewer() {
     scene.background = new THREE.Color(0x000000);
 
     camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 50, 120);
+    camera.position.set(0, 40, 120);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
@@ -32,10 +33,6 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-/* ---- PRELOADED MODELS ----
-   Replace the URLs below with real STL files hosted online.
-*/
-
 const models = {
     r1: "./reactor.stl",
     r2: "./model2.stl",
@@ -44,13 +41,9 @@ const models = {
 
 const loader = new STLLoader();
 
-/* ---- FUNCTION CALLED BY BUTTONS ---- */
 function loadPreloaded(name) {
     const file = models[name];
-    if (!file) {
-        console.error("Unknown model:", name);
-        return;
-    }
+    if (!file) return console.error("Unknown model:", name);
 
     loader.load(file, geometry => {
         if (currentModel) scene.remove(currentModel);
@@ -66,5 +59,5 @@ function loadPreloaded(name) {
     });
 }
 
-// Expose to global so HTML can call it
+// ⭐ EXPOSE THE FUNCTION GLOBALLY FOR onclick=""
 window.loadPreloaded = loadPreloaded;
