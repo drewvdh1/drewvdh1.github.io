@@ -47,7 +47,10 @@ function selectModel() {
 
 function loadLocalModel(file) {
     // Remove previous models but keep light + camera
-    scene.children = scene.children.filter(obj => obj.type === "DirectionalLight");
+    scene.children.forEach(obj => {
+    if (obj.type !== "DirectionalLight") scene.remove(obj);
+});
+
 
     const reader = new FileReader();
 
