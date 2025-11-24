@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <title>3D Gallery</title>
 
-    <!-- Minimal CSS so the viewer is actually visible -->
     <style>
         body {
             margin: 0;
@@ -15,7 +14,6 @@
             font-family: Arial, sans-serif;
         }
 
-        /* Left sidebar */
         #sidebar {
             width: 280px;
             background: #1a1a1a;
@@ -34,17 +32,17 @@
             border-radius: 6px;
             text-align: left;
             cursor: pointer;
-            font-size: 14px;
         }
 
         button.model-button:hover {
             background: #444;
         }
 
-        /* 3D viewer container */
         #viewer {
             flex: 1;
             background: #000;
+            position: relative;
+            overflow: hidden;
         }
     </style>
 
@@ -65,6 +63,7 @@
 
     <div id="viewer"></div>
 
+    <!-- MUST match your JS filename -->
     <script src="mainscript.js"></script>
 </body>
-</html>s
+</html>
