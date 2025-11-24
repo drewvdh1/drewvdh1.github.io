@@ -1,4 +1,4 @@
-// Import everything using ABSOLUTE URLs (solves the module specifier error)
+// Import modules using ABSOLUTE URLs
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/controls/OrbitControls.js";
 import { STLLoader } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/STLLoader.js";
@@ -43,21 +43,29 @@ const loader = new STLLoader();
 
 function loadPreloaded(name) {
     const file = models[name];
-    if (!file) return console.error("Unknown model:", name);
+    if (!file) {
+        console.error("Unknown model:", name);
+        return;
+    }
 
-    loader.load(file, geometry => {
-        if (currentModel) scene.remove(currentModel);
+    loader.load(
+        file,
+        (geometry) => {
+            if (currentModel) scene.remove(currentModel);
 
-        const material = new THREE.MeshStandardMaterial({ color: 0x999999 });
-        currentModel = new THREE.Mesh(geometry, material);
+            const material = new THREE.MeshStandardMaterial({ color: 0x999999 });
+            currentModel = new THREE.Mesh(geometry, material);
 
-        geometry.computeBoundingBox();
-        const center = geometry.boundingBox.getCenter(new THREE.Vector3());
-        currentModel.position.sub(center);
+            geometry.computeBoundingBox();
+            const center = geometry.boundingBox.getCenter(new THREE.Vector3());
+            currentModel.position.sub(center);
 
-        scene.add(currentModel);
-    });
+            scene.add(currentModel);
+        },
+        undefined,
+        (error) => console.error("STL load error:", error)
+    );
 }
 
-// ⭐ EXPOSE THE FUNCTION GLOBALLY FOR onclick=""
+// Make available to HTML buttons
 window.loadPreloaded = loadPreloaded;
