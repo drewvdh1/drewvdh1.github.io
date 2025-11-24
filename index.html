@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <title>3D Gallery</title>
 
-    <!-- Minimal CSS so the viewer is visible -->
     <style>
         body {
             margin: 0;
@@ -16,7 +15,7 @@
         }
 
         #sidebar {
-            width: 280px;
+            width: 260px;
             background: #1a1a1a;
             padding: 20px;
             display: flex;
@@ -24,18 +23,18 @@
             gap: 10px;
         }
 
-        button.model-button {
+        .model-button {
             width: 100%;
             padding: 12px;
             background: #2a2a2a;
             color: white;
             border: none;
             border-radius: 6px;
-            text-align: left;
             cursor: pointer;
+            text-align: left;
         }
 
-        button.model-button:hover {
+        .model-button:hover {
             background: #444;
         }
 
@@ -49,21 +48,20 @@
 <body>
     <div id="sidebar">
         <h2>3D Gallery</h2>
-        <button class="model-button" onclick="selectModel('reactor.stl')">Reactor Pressure Vessel</button>
-        <button class="model-button" onclick="selectModel('model2.stl')">Model 2</button>
-        <button class="model-button" onclick="selectModel('model3.stl')">Model 3</button>
+        <button class="model-button" data-model-btn>Reactor Pressure Vessel</button>
+        <button class="model-button" data-model-btn>Model 2</button>
+        <button class="model-button" data-model-btn>Model 3</button>
     </div>
 
     <div id="viewer"></div>
 
-    <!-- Load Three.js using modules -->
+    <!-- Module that imports Three.js and loads your script -->
     <script type="module">
         import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.module.js";
         import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/controls/OrbitControls.js";
         import { STLLoader } from "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/loaders/STLLoader.js";
         import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/loaders/GLTFLoader.js";
 
-        // Expose modules globally for viewer.js
         window.THREE = THREE;
         window.OrbitControls = OrbitControls;
         window.STLLoader = STLLoader;
