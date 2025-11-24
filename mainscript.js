@@ -1,71 +1,88 @@
-// Import modules using ABSOLUTE URLs
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/controls/OrbitControls.js";
-import { STLLoader } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/STLLoader.js";
+// =========================
+// Basic Scene Setup
+// =========================
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
 
-let scene, camera, renderer, controls, currentModel;
+const camera = new THREE.PerspectiveCamera(
+    60,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    2000
+);
+camera.position.set(100, 100, 150);
 
-initViewer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
 
-function initViewer() {
-    const container = document.getElementById("viewer");
+document.getElementById("viewer").appendChild(renderer.domElement);
 
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+// =========================
+// Orbit Controls
+// =========================
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.rotateSpeed = 0.5;
 
-    camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 40, 120);
+// =========================
+// Lighting
+// =========================
+const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+scene.add(ambient);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    container.appendChild(renderer.domElement);
+const directional = new THREE.DirectionalLight(0xffffff, 1);
+directional.position.set(50, 50, 100);
+scene.add(directional);
 
-    controls = new OrbitControls(camera, renderer.domElement);
+// =========================
+// Load STL Model
+// =========================
+const loader = new THREE.STLLoader();
 
-    const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-    scene.add(light);
+loader.load(
+    "reactor_vessel.stl",
+    function (geometry) {
+        const material = new THREE.MeshPhongMaterial({
+            color: 0xcccccc,
+            specular: 0x111111,
+            shininess: 80
+        });
 
-    animate();
-}
+        const mesh = new THREE.Mesh(geometry, material);
 
+        geometry.computeBoundingBox();
+        const center = new THREE.Vector3();
+        geometry.boundingBox.getCenter(center);
+        mesh.position.sub(center); // center the model
+
+        mesh.scale.set(1, 1, 1);
+        scene.add(mesh);
+
+        document.getElementById("loading").style.display = "none";
+    },
+    undefined,
+    function (error) {
+        console.error("STL Loading Error:", error);
+        document.getElementById("loading").innerText = "Failed to load STL.";
+    }
+);
+
+// =========================
+// Handle Resize
+// =========================
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// =========================
+// Render Loop
+// =========================
 function animate() {
     requestAnimationFrame(animate);
+    controls.update();
     renderer.render(scene, camera);
 }
-
-const models = {
-    r1: "./reactor.stl",
-    r2: "./model2.stl",
-    r3: "./model3.stl"
-};
-
-const loader = new STLLoader();
-
-function loadPreloaded(name) {
-    const file = models[name];
-    if (!file) {
-        console.error("Unknown model:", name);
-        return;
-    }
-
-    loader.load(
-        file,
-        (geometry) => {
-            if (currentModel) scene.remove(currentModel);
-
-            const material = new THREE.MeshStandardMaterial({ color: 0x999999 });
-            currentModel = new THREE.Mesh(geometry, material);
-
-            geometry.computeBoundingBox();
-            const center = geometry.boundingBox.getCenter(new THREE.Vector3());
-            currentModel.position.sub(center);
-
-            scene.add(currentModel);
-        },
-        undefined,
-        (error) => console.error("STL load error:", error)
-    );
-}
-
-// Make available to HTML buttons
-window.loadPreloaded = loadPreloaded;
+animate();
