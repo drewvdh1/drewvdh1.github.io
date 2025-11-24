@@ -1,27 +1,27 @@
-let scene, camera, renderer, controls;
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/controls/OrbitControls.js";
+import { STLLoader } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/STLLoader.js";
+
+let scene, camera, renderer, controls, currentModel;
+
+initViewer();
 
 function initViewer() {
     const container = document.getElementById("viewer");
 
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 50, 120);
+
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setClearColor(0x000000);
     container.appendChild(renderer.domElement);
 
-    scene = new THREE.Scene();
+    controls = new OrbitControls(camera, renderer.domElement);
 
-    camera = new THREE.PerspectiveCamera(
-        60,
-        container.clientWidth / container.clientHeight,
-        0.1,
-        1000
-    );
-    camera.position.set(2, 2, 2);
-
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
+    const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
     scene.add(light);
 
     animate();
@@ -32,51 +32,39 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-function clearModels() {
-    scene.children.forEach(obj => {
-        if (obj.type !== "DirectionalLight") scene.remove(obj);
-    });
-}
+/* ---- PRELOADED MODELS ----
+   Replace the URLs below with real STL files hosted online.
+*/
 
-function loadPreloaded(filename) {
-    clearModels();
+const models = {
+    r1: "./reactor.stl",
+    r2: "./model2.stl",
+    r3: "./model3.stl"
+};
 
-    const ext = filename.split('.').pop().toLowerCase();
+const loader = new STLLoader();
 
-    if (ext === "stl") loadSTLFile(filename);
-    else if (ext === "glb" || ext === "gltf") loadGLBFile(filename);
-}
+/* ---- FUNCTION CALLED BY BUTTONS ---- */
+function loadPreloaded(name) {
+    const file = models[name];
+    if (!file) {
+        console.error("Unknown model:", name);
+        return;
+    }
 
-function loadSTLFile(url) {
-    const loader = new THREE.STLLoader();
-    loader.load(url, geometry => {
+    loader.load(file, geometry => {
+        if (currentModel) scene.remove(currentModel);
+
         const material = new THREE.MeshStandardMaterial({ color: 0x999999 });
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
-        autoCenterAndScale(mesh);
+        currentModel = new THREE.Mesh(geometry, material);
+
+        geometry.computeBoundingBox();
+        const center = geometry.boundingBox.getCenter(new THREE.Vector3());
+        currentModel.position.sub(center);
+
+        scene.add(currentModel);
     });
 }
 
-function loadGLBFile(url) {
-    const loader = new THREE.GLTFLoader();
-    loader.load(url, gltf => {
-        const model = gltf.scene;
-        scene.add(model);
-        autoCenterAndScale(model);
-    });
-}
-
-function autoCenterAndScale(object) {
-    const box = new THREE.Box3().setFromObject(object);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-
-    object.position.sub(center);
-
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const scale = 1 / maxDim;
-
-    object.scale.setScalar(scale);
-}
-
-window.onload = initViewer;
+// Expose to global so HTML can call it
+window.loadPreloaded = loadPreloaded;

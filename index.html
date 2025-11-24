@@ -13,60 +13,45 @@
             color: white;
             font-family: Arial, sans-serif;
         }
-
         #sidebar {
-            width: 260px;
+            width: 280px;
             background: #1a1a1a;
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-
-        .model-button {
+        button.model-button {
             width: 100%;
             padding: 12px;
             background: #2a2a2a;
             color: white;
             border: none;
             border-radius: 6px;
-            cursor: pointer;
             text-align: left;
+            cursor: pointer;
+            font-size: 14px;
         }
-
-        .model-button:hover {
+        button.model-button:hover {
             background: #444;
         }
-
         #viewer {
             flex: 1;
-            background: black;
+            background: #000;
         }
     </style>
-
-    <!-- THREE.JS (NON-MODULE) -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/STLLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 
 <body>
     <div id="sidebar">
         <h2>3D Gallery</h2>
-        <button class="model-button" onclick="loadPreloaded('reactor_vessel.stl')">
-            Reactor Pressure Vessel
-        </button>
-        <button class="model-button" onclick="loadPreloaded('model2.glb')">
-            Model 2
-        </button>
-        <button class="model-button" onclick="loadPreloaded('model3.glb')">
-            Model 3
-        </button>
+        <button class="model-button" onclick="loadPreloaded('r1')">Reactor Vessel</button>
+        <button class="model-button" onclick="loadPreloaded('r2')">Model 2</button>
+        <button class="model-button" onclick="loadPreloaded('r3')">Model 3</button>
     </div>
 
     <div id="viewer"></div>
 
-    <script src="mainscript.js"></script>
+    <script type="module" src="./mainscript.js"></script>
 </body>
 </html>
