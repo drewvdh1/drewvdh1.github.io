@@ -43,31 +43,30 @@
             background: black;
         }
     </style>
+
+    <!-- THREE.JS (NON-MODULE) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 
 <body>
     <div id="sidebar">
         <h2>3D Gallery</h2>
-        <button class="model-button" data-model-btn>Reactor Pressure Vessel</button>
-        <button class="model-button" data-model-btn>Model 2</button>
-        <button class="model-button" data-model-btn>Model 3</button>
+        <button class="model-button" onclick="loadPreloaded('reactor_vessel.stl')">
+            Reactor Pressure Vessel
+        </button>
+        <button class="model-button" onclick="loadPreloaded('model2.glb')">
+            Model 2
+        </button>
+        <button class="model-button" onclick="loadPreloaded('model3.glb')">
+            Model 3
+        </button>
     </div>
 
     <div id="viewer"></div>
 
-    <!-- Module that imports Three.js and loads your script -->
-    <script type="module">
-        import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.module.js";
-        import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/controls/OrbitControls.js";
-        import { STLLoader } from "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/loaders/STLLoader.js";
-        import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/loaders/GLTFLoader.js";
-
-        window.THREE = THREE;
-        window.OrbitControls = OrbitControls;
-        window.STLLoader = STLLoader;
-        window.GLTFLoader = GLTFLoader;
-
-        import "./mainscript.js";
-    </script>
+    <script src="viewer.js"></script>
 </body>
 </html>
