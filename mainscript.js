@@ -54,7 +54,7 @@ loader.load(
         geometry.computeBoundingBox();
         const center = new THREE.Vector3();
         geometry.boundingBox.getCenter(center);
-        mesh.position.sub(center); // center the model
+        mesh.position.sub(center); // Center the model
 
         mesh.scale.set(1, 1, 1);
         scene.add(mesh);
