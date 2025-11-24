@@ -1,115 +1,107 @@
-let scene, camera, renderer, controls;
+let scene, camera, renderer, controls, currentModel;
 
-window.onload = initViewer;
+initViewer();
 
 function initViewer() {
-    const container = document.getElementById("viewer");
-
-    // Renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setClearColor(0x000000);
-    container.appendChild(renderer.domElement);
-
-    // Scene
     scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
 
-    // Camera
     camera = new THREE.PerspectiveCamera(
         60,
-        container.clientWidth / container.clientHeight,
+        window.innerWidth / window.innerHeight,
         0.1,
         1000
     );
-    camera.position.set(2, 2, 2);
+    camera.position.set(0, 0, 100);
 
-    // Controls
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth - 280, window.innerHeight);
+    document.getElementById("viewer").appendChild(renderer.domElement);
 
-    // Light
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
-    scene.add(light);
+    controls = new OrbitControls(camera, renderer.domElement);
+
+    // Basic lighting
+    const light1 = new THREE.DirectionalLight(0xffffff, 1);
+    light1.position.set(1, 1, 1);
+    scene.add(light1);
+
+    const light2 = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(light2);
 
     animate();
 }
 
-// Rendering loop
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
 }
 
-// Called when clicking sidebar buttons
-function selectModel() {
+window.selectModel = function (fileName) {
+    if (!fileName) return;
+
+    // Remove previous model
+    if (currentModel) {
+        scene.remove(currentModel);
+        currentModel = null;
+    }
+
+    const extension = fileName.split('.').pop().toLowerCase();
+
+    if (extension === "stl") {
+        loadSTL(fileName);
+    } else if (extension === "glb" || extension === "gltf") {
+        loadGLB(fileName);
+    }
+};
+
+function loadSTL(file) {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".stl,.glb,.gltf";
+    input.accept = ".stl";
 
-    input.onchange = (event) => {
-        const file = event.target.files[0];
-        if (file) loadLocalModel(file);
+    input.onchange = (e) => {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(e.target.files[0]);
+
+        reader.onload = () => {
+            const loader = new STLLoader();
+            const geometry = loader.parse(reader.result);
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x888888,
+                metalness: 0.1,
+                roughness: 0.6
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.scale.set(0.1, 0.1, 0.1);
+            mesh.position.set(0, -20, 0);
+
+            scene.add(mesh);
+            currentModel = mesh;
+        };
     };
 
     input.click();
 }
 
-// Loads STL / GLB / GLTF
-function loadLocalModel(file) {
-    // Remove old model(s) but keep the light
-    scene.children = scene.children.filter(obj => obj.type === "DirectionalLight");
+function loadGLB(file) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".glb,.gltf";
 
-    const reader = new FileReader();
+    input.onchange = (e) => {
+        const url = URL.createObjectURL(e.target.files[0]);
 
-    reader.onload = function (e) {
-        const extension = file.name.split('.').pop().toLowerCase();
+        const loader = new GLTFLoader();
+        loader.load(url, (gltf) => {
+            const model = gltf.scene;
+            model.scale.set(10, 10, 10);
+            scene.add(model);
 
-        if (extension === "stl") loadSTL(e.target.result);
-        else if (extension === "glb" || extension === "gltf") loadGLB(e.target.result);
-        else alert("Unsupported file type");
+            currentModel = model;
+        });
     };
 
-    reader.readAsArrayBuffer(file);
-}
-
-// STL loader
-function loadSTL(data) {
-    const loader = new THREE.STLLoader();
-    const geometry = loader.parse(data);
-    const material = new THREE.MeshStandardMaterial({ color: 0x888888 });
-    const mesh = new THREE.Mesh(geometry, material);
-
-    scene.add(mesh);
-    autoCenterAndScale(mesh);
-}
-
-// GLB/GLTF loader
-function loadGLB(data) {
-    const loader = new THREE.GLTFLoader();
-
-    loader.parse(
-        data,
-        "",
-        (gltf) => {
-            const model = gltf.scene;
-            scene.add(model);
-            autoCenterAndScale(model);
-        },
-        (error) => console.error("GLB load error:", error)
-    );
-}
-
-// Centers and scales models
-function autoCenterAndScale(object) {
-    const box = new THREE.Box3().setFromObject(object);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-
-    // Move to center
-    object.position.sub(center);
-
-    // Fit to view
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const scaleFactor = 1 / maxDim;
-    object.scale.setScalar(scaleFactor);
+    input.click();
 }
