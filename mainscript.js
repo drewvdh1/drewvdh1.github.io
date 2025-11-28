@@ -58,7 +58,7 @@ Reactor Vessel
 
 This reactor vessel model represents a high-pressure containment chamber commonly used in chemical, thermal, or nuclear processing systems.
 The rounded geometry distributes internal stresses uniformly, while the flange ports support instrumentation, coolant flow, and structural connections.
-    `
+    `,
     "Steam_Generator.stl": `
 Steam Generator
 
