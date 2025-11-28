@@ -1,90 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Engineering Model Viewer</title>
+  <meta charset="utf-8" />
+  <title>3D Model Viewer | Drew vdH</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --sidebar-w: 260px;
+      --bg: #0f1113;
+      --panel: #15181b;
+      --accent: #3b82f6;
+      --text-muted: #9ca3af;
+    }
 
-    <style>
-        body {
-            margin: 0;
-            background: #111;
-            font-family: Arial, sans-serif;
-            color: white;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        /* Sidebar */
-        #sidebar {
-            width: 260px;
-            background: #1a1d21;
-            padding: 20px;
-            box-sizing: border-box;
-            border-right: 1px solid #000;
-        }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: #f9fafb;
+    }
 
-        #sidebar h1 {
-            font-size: 22px;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-weight: 700;
-        }
+    .app {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
 
-        .model-btn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            background: #222;
-            border: none;
-            border-radius: 8px;
-            color: #ddd;
-            cursor: pointer;
-            font-size: 15px;
-        }
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--panel);
+      border-right: 1px solid #020617;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
 
-        .model-btn:hover {
-            background: #333;
-        }
+    .brand {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
 
-        /* Viewer */
-        #viewer {
-            flex: 1;
-            position: relative;
-        }
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
 
-        #loading {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(0,0,0,0.6);
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-    </style>
+    .section-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      margin-top: 12px;
+    }
+
+    #model-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .model-btn {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: #111827;
+      color: #e5e7eb;
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, transform 0.05s;
+    }
+
+    .model-btn:hover {
+      background: #1f2937;
+      border-color: #374151;
+      transform: translateY(-1px);
+    }
+
+    .model-btn.active {
+      border-color: var(--accent);
+      background: #1d283a;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Viewer */
+    .viewer-wrap {
+      flex: 1;
+      position: relative;
+      background: radial-gradient(circle at 10% 0%, rgba(148,163,184,0.12) 0, transparent 45%), #020617;
+    }
+
+    #viewer {
+      width: 100%;
+      height: 100%;
+    }
+
+    #loading {
+      position: absolute;
+      top: 12px;
+      left: 280px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+      font-size: 13px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      pointer-events: none;
+      max-width: 50vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+      #loading {
+        left: 12px;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="app">
+    <aside class="sidebar">
+      <div>
+        <div class="brand">3D Model Viewer</div>
+        <div class="brand-sub">Built by Drew • STL library</div>
+      </div>
 
-    <!-- Sidebar -->
-    <div id="sidebar">
-        <h1>3D Model Viewer</h1>
+      <div>
+        <div class="section-title">Models</div>
         <div id="model-list"></div>
-    </div>
+      </div>
 
-    <!-- Viewer -->
-    <div id="viewer">
-        <div id="loading">Loading...</div>
-    </div>
+      <div class="sidebar-footer">
+        Drag to rotate • Scroll to zoom • Right-click to pan
+      </div>
+    </aside>
 
-    <!-- Three.js + STLLoader + OrbitControls -->
-    <script src="https://cdn.skypack.dev/three@0.129.0/build/three.js"></script>
-    <script src="https://cdn.skypack.dev/three@0.129.0/examples/js/loaders/STLLoader.js"></script>
-    <script src="https://cdn.skypack.dev/three@0.129.0/examples/js/controls/OrbitControls.js"></script>
+    <main class="viewer-wrap">
+      <div id="loading">Loading…</div>
+      <div id="viewer"></div>
+    </main>
+  </div>
 
-    <!-- Your script -->
-    <script src="mainscript.js"></script>
+  <!-- Your app code (ES module) -->
+  <script type="module" src="mainscript.js"></script>
 </body>
 </html>

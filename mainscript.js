@@ -1,125 +1,172 @@
-// =======================
-// MODEL LIST
-// =======================
+// mainscript.js  (ES module)
+
+// Import three.js + helpers from CDN (module versions)
+import * as THREE from "https://cdn.skypack.dev/three@0.155.0/build/three.module.js";
+import { OrbitControls } from "https://cdn.skypack.dev/three@0.155.0/examples/jsm/controls/OrbitControls.js";
+import { STLLoader } from "https://cdn.skypack.dev/three@0.155.0/examples/jsm/loaders/STLLoader.js";
+
+// ------------- Model list -------------
+// Put your STL files in /models and list them here.
 const MODELS = [
-    { name: "Reactor Vessel", file: "models/reactor_vessel.stl" }
+  { name: "Reactor Vessel", file: "models/reactor_vessel.stl" },
+  // { name: "Another Part", file: "models/another_part.stl" },
 ];
 
-// =======================
-// Scene Setup
-// =======================
-const viewer = document.getElementById("viewer");
-const loading = document.getElementById("loading");
+let currentModel = null;
+
+// ------------- Basic scene setup -------------
+const viewerEl = document.getElementById("viewer");
+const loadingEl = document.getElementById("loading");
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x111111);
+scene.background = new THREE.Color(0x05070a);
 
 const camera = new THREE.PerspectiveCamera(
-    60,
-    viewer.clientWidth / viewer.clientHeight,
-    0.1,
-    2000
+  60,
+  viewerEl.clientWidth / viewerEl.clientHeight,
+  0.1,
+  5000
 );
-camera.position.set(150, 150, 200);
+camera.position.set(120, 100, 160);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(viewer.clientWidth, viewer.clientHeight);
-viewer.appendChild(renderer.domElement);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(viewerEl.clientWidth, viewerEl.clientHeight);
+viewerEl.appendChild(renderer.domElement);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.rotateSpeed = 0.6;
 
 // Lighting
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambient);
 
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(100, 100, 200);
-scene.add(light);
+const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
+keyLight.position.set(120, 180, 200);
+scene.add(keyLight);
 
-let currentMesh = null;
+const rimLight = new THREE.DirectionalLight(0xffffff, 0.4);
+rimLight.position.set(-160, -40, -120);
+scene.add(rimLight);
 
-// =======================
-// LOAD STL MODEL
-// =======================
-const loader = new THREE.STLLoader();
+// Ground-ish grid (very subtle)
+const grid = new THREE.GridHelper(400, 40, 0x202636, 0x111827);
+grid.material.transparent = true;
+grid.material.opacity = 0.18;
+scene.add(grid);
 
+// ------------- STL loader -------------
+const stlLoader = new STLLoader();
+let mesh = null;
+
+// Helper: fit camera to current mesh
+function fitCameraToObject(object) {
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const fitHeightDistance = maxDim / (2 * Math.atan((Math.PI * camera.fov) / 360));
+  const fitWidthDistance = fitHeightDistance / camera.aspect;
+  const distance = 1.4 * Math.max(fitHeightDistance, fitWidthDistance);
+
+  const dir = new THREE.Vector3()
+    .subVectors(camera.position, controls.target)
+    .normalize();
+
+  controls.target.copy(center);
+  camera.position.copy(center).add(dir.multiplyScalar(distance));
+
+  camera.near = distance / 100;
+  camera.far = distance * 10;
+  camera.updateProjectionMatrix();
+  controls.update();
+}
+
+// Load STL and add to scene
 function loadModel(file) {
-    loading.innerText = "Loading " + file + "...";
+  loadingEl.textContent = `Loading: ${file}`;
 
-    loader.load(
-        file,
-        geo => {
-            if (currentMesh) scene.remove(currentMesh);
+  stlLoader.load(
+    file,
+    geometry => {
+      if (mesh) {
+        scene.remove(mesh);
+        mesh.geometry.dispose();
+        mesh.material.dispose();
+      }
 
-            const material = new THREE.MeshPhongMaterial({
-                color: 0xe0e0e0,
-                shininess: 60
-            });
+      const material = new THREE.MeshPhongMaterial({
+        color: 0xd4d4d8,
+        specular: 0x111111,
+        shininess: 80,
+      });
 
-            currentMesh = new THREE.Mesh(geo, material);
+      mesh = new THREE.Mesh(geometry, material);
 
-            // Center model
-            geo.computeBoundingBox();
-            const center = new THREE.Vector3();
-            geo.boundingBox.getCenter(center);
-            geo.translate(-center.x, -center.y, -center.z);
+      geometry.computeBoundingBox();
+      const center = new THREE.Vector3();
+      geometry.boundingBox.getCenter(center);
+      geometry.translate(-center.x, -center.y, -center.z);
 
-            scene.add(currentMesh);
-            fitView();
+      scene.add(mesh);
+      fitCameraToObject(mesh);
 
-            loading.innerText = "Loaded: " + file;
-        },
-        undefined,
-        err => {
-            console.error(err);
-            loading.innerText = "Error loading model.";
-        }
-    );
+      loadingEl.textContent = `Loaded: ${file}`;
+      currentModel = file;
+    },
+    xhr => {
+      if (xhr.total) {
+        const pct = Math.round((xhr.loaded / xhr.total) * 100);
+        loadingEl.textContent = `Loading: ${file} (${pct}%)`;
+      }
+    },
+    error => {
+      console.error("STL load error", error);
+      loadingEl.textContent = `Error loading ${file}`;
+    }
+  );
 }
 
-// =======================
-// CAMERA FIT
-// =======================
-function fitView() {
-    if (!currentMesh) return;
+// ------------- Sidebar buttons -------------
+const listEl = document.getElementById("model-list");
 
-    const box = new THREE.Box3().setFromObject(currentMesh);
-    const size = box.getSize(new THREE.Vector3()).length();
-    const center = box.getCenter(new THREE.Vector3());
+MODELS.forEach((model, index) => {
+  const btn = document.createElement("button");
+  btn.className = "model-btn";
+  btn.textContent = model.name;
 
-    controls.target.copy(center);
-    camera.position.set(center.x + size, center.y + size, center.z + size);
-    camera.updateProjectionMatrix();
-}
+  btn.addEventListener("click", () => {
+    // update active styling
+    document.querySelectorAll(".model-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    loadModel(model.file);
+  });
 
-// =======================
-// SIDEBAR BUTTONS
-// =======================
-const list = document.getElementById("model-list");
+  listEl.appendChild(btn);
 
-MODELS.forEach(m => {
-    const btn = document.createElement("button");
-    btn.className = "model-btn";
-    btn.innerText = m.name;
-    btn.onclick = () => loadModel(m.file);
-    list.appendChild(btn);
+  // auto-load first model
+  if (index === 0) {
+    btn.classList.add("active");
+    loadModel(model.file);
+  }
 });
 
-// =======================
-// RENDER LOOP
-// =======================
+// ------------- Resize handling -------------
+window.addEventListener("resize", () => {
+  const w = viewerEl.clientWidth;
+  const h = viewerEl.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+// ------------- Animation loop -------------
 function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
 }
 animate();
-
-// =======================
-// RESIZE HANDLER
-// =======================
-window.addEventListener("resize", () => {
-    camera.aspect = viewer.clientWidth / viewer.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(viewer.clientWidth, viewer.clientHeight);
-});
