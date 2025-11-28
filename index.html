@@ -4,105 +4,84 @@
     <meta charset="utf-8" />
     <title>3D Model Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <style>
-        :root {
-            --sidebar-w: 260px;
-            --bg: #0f1113;
-            --panel: #15181b;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body,html {
-            margin: 0;
-            height: 100%;
+        body {
+            background: #0f1113;
+            color: #eee;
             font-family: Arial, sans-serif;
-            background: var(--bg);
-            color: #ddd;
-        }
-
-        .app {
             display: flex;
             height: 100vh;
-            width: 100vw;
             overflow: hidden;
         }
 
         /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-w);
-            background: var(--panel);
-            padding: 15px;
-            box-sizing: border-box;
-            overflow-y: auto;
+        #sidebar {
+            width: 260px;
+            background: #15181b;
+            padding: 20px;
             border-right: 1px solid #000;
+            overflow-y: auto;
         }
 
-        .sidebar h2 {
-            margin-top: 0;
-            font-size: 18px;
+        #sidebar h1 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: bold;
         }
 
         .model-btn {
             width: 100%;
-            padding: 10px;
-            margin: 6px 0;
-            border: none;
-            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
             background: #222;
             color: #eee;
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
+            text-align: left;
+            font-size: 14px;
         }
-        .model-btn:hover {
-            background: #333;
-        }
+        .model-btn:hover { background: #333; }
 
         /* Viewer */
-        .viewer {
+        #viewer {
             flex: 1;
             position: relative;
         }
 
-        #viewer {
-            width: 100%;
-            height: 100%;
-        }
-
         #loading {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 15px;
+            left: 15px;
             background: rgba(0,0,0,0.6);
-            padding: 8px 12px;
+            padding: 10px 15px;
             border-radius: 8px;
-            color: white;
+            font-size: 14px;
         }
     </style>
 </head>
 
 <body>
-    <div class="app">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <h2>Models</h2>
-            <div id="model-list"></div>
 
-            <h2>Controls</h2>
-            <button class="model-btn" id="btn-center">Center View</button>
-            <button class="model-btn" id="btn-reset">Reset Camera</button>
-            <button class="model-btn" id="btn-wire">Toggle Wireframe</button>
-            <button class="model-btn" id="btn-auto">Auto Rotate</button>
+    <div id="sidebar">
+        <h1>3D Model Viewer</h1>
 
-            <h2>Scale</h2>
-            <input type="range" id="scale-range" min="0.1" max="3" step="0.01" value="1" style="width: 100%">
-        </aside>
+        <button class="model-btn" data-file="reactor_vessel.stl">Reactor Vessel</button>
+        <!-- Add more models like this -->
+        <!-- <button class="model-btn" data-file="pump.stl">Pump Housing</button> -->
+        <!-- <button class="model-btn" data-file="nozzle.stl">Jet Nozzle</button> -->
 
-        <!-- Viewer -->
-        <main class="viewer">
-            <div id="loading">Select a model...</div>
-            <div id="viewer"></div>
-        </main>
     </div>
 
-    <!-- Load our module script -->
+    <div id="viewer">
+        <div id="loading">Select a model to load...</div>
+    </div>
+
+    <!-- Your JS (Module mode, like YouTuber example) -->
     <script type="module" src="mainscript.js"></script>
+
 </body>
 </html>
