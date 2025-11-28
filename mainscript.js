@@ -1,14 +1,14 @@
-// Import modern Three.js + loaders (jsDelivr works reliably)
+// Import ThreeJS modules (ESM) from jsDelivr CDN
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js";
 import { STLLoader } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/STLLoader.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/controls/OrbitControls.js";
 
-// Setup
+// === Scene Setup ===
 const viewer = document.getElementById("viewer");
 const loading = document.getElementById("loading");
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0f0f0f);
+scene.background = new THREE.Color(0x111111);
 
 const camera = new THREE.PerspectiveCamera(
     60,
@@ -16,7 +16,7 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     2000
 );
-camera.position.set(150, 150, 200);
+camera.position.set(120, 120, 150);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(viewer.clientWidth, viewer.clientHeight);
@@ -25,98 +25,89 @@ viewer.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-// Lights
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+// Lighting
+scene.add(new THREE.AmbientLight(0xffffff, 0.7));
 const dir = new THREE.DirectionalLight(0xffffff, 1);
-dir.position.set(200, 200, 200);
+dir.position.set(50, 50, 100);
 scene.add(dir);
 
-let mesh = null;
+let currentMesh = null;
 
-// Load STL
+// === Load STL ===
 const loader = new STLLoader();
 
-function loadSTL(path) {
-    loading.style.display = "block";
+function loadModel(file) {
+    loading.innerText = "Loading " + file + "...";
 
-    loader.load(
-        path,
-        geo => {
-            if (mesh) scene.remove(mesh);
+    loader.load("models/" + file, geo => {
+        if (currentMesh) scene.remove(currentMesh);
 
-            const mat = new THREE.MeshPhongMaterial({
-                color: 0xdddddd,
-                shininess: 80
-            });
+        const mat = new THREE.MeshPhongMaterial({
+            color: 0xbbbbbb,
+            shininess: 80
+        });
 
-            mesh = new THREE.Mesh(geo, mat);
+        currentMesh = new THREE.Mesh(geo, mat);
 
-            geo.computeBoundingBox();
-            const center = new THREE.Vector3();
-            geo.boundingBox.getCenter(center);
-            geo.translate(-center.x, -center.y, -center.z);
+        geo.computeBoundingBox();
+        const center = new THREE.Vector3();
+        geo.boundingBox.getCenter(center);
+        geo.translate(-center.x, -center.y, -center.z);
 
-            scene.add(mesh);
-            fitView();
-
-            loading.innerText = "Loaded: " + path;
-            setTimeout(() => loading.style.display = "none", 1200);
-        },
-        undefined,
-        err => {
-            console.error(err);
-            loading.innerText = "Error loading file.";
-        }
-    );
+        scene.add(currentMesh);
+        fitView();
+        loading.innerText = "Loaded: " + file;
+    });
 }
 
 function fitView() {
-    if (!mesh) return;
+    if (!currentMesh) return;
 
-    const box = new THREE.Box3().setFromObject(mesh);
+    const box = new THREE.Box3().setFromObject(currentMesh);
     const size = box.getSize(new THREE.Vector3()).length();
     const center = box.getCenter(new THREE.Vector3());
 
     controls.target.copy(center);
-
-    camera.position.copy(center);
-    camera.position.x += size * 1.5;
-    camera.position.y += size * 1.2;
-    camera.position.z += size * 1.5;
-
-    controls.update();
+    camera.position.set(
+        center.x + size * 1.3,
+        center.y + size * 1.1,
+        center.z + size * 1.3
+    );
 }
 
-// Sidebar buttons
-document.getElementById("btn-reactor").onclick = () =>
-    loadSTL("models/reactor_vessel.stl");
-
-document.getElementById("center").onclick = fitView;
-
-document.getElementById("reset").onclick = () => {
-    camera.position.set(150, 150, 200);
+// === Controls ===
+document.getElementById("reactorBtn").onclick = () => loadModel("reactor_vessel.stl");
+document.getElementById("centerBtn").onclick = fitView;
+document.getElementById("resetBtn").onclick = () => {
+    camera.position.set(120, 120, 150);
     controls.target.set(0, 0, 0);
 };
-
-document.getElementById("wireframe").onclick = () => {
-    if (mesh) mesh.material.wireframe = !mesh.material.wireframe;
+document.getElementById("wireBtn").onclick = () => {
+    if (currentMesh) currentMesh.material.wireframe = !currentMesh.material.wireframe;
 };
 
-let auto = false;
-document.getElementById("auto").onclick = () => auto = !auto;
+let autoRotate = false;
+document.getElementById("autoBtn").onclick = () => autoRotate = !autoRotate;
 
-// Resize
+document.getElementById("scaleRange").oninput = e => {
+    if (currentMesh) currentMesh.scale.set(e.target.value, e.target.value, e.target.value);
+};
+
+// === Resize ===
 window.addEventListener("resize", () => {
     camera.aspect = viewer.clientWidth / viewer.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(viewer.clientWidth, viewer.clientHeight);
 });
 
-// Animation loop
+// === Animation ===
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
-    if (auto && mesh) mesh.rotation.y += 0.003;
+
+    if (autoRotate && currentMesh) {
+        currentMesh.rotation.y += 0.003;
+    }
     renderer.render(scene, camera);
 }
 animate();

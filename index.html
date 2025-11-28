@@ -3,45 +3,44 @@
 <head>
     <meta charset="UTF-8" />
     <title>3D Model Viewer</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
         body {
             margin: 0;
             display: flex;
             height: 100vh;
-            background: #121417;
             font-family: Arial, sans-serif;
+            background-color: #111;
             color: #fff;
         }
 
         #sidebar {
             width: 260px;
-            background: #1c1f23;
+            background: #1a1d21;
             padding: 20px;
             box-sizing: border-box;
             border-right: 1px solid #000;
         }
 
-        h1 {
+        #sidebar h1 {
             margin-top: 0;
             font-size: 22px;
-            font-weight: bold;
         }
 
         button {
             width: 100%;
-            margin: 8px 0;
-            padding: 10px;
-            background: #2a2d31;
-            color: white;
+            padding: 12px;
+            margin: 10px 0;
+            background: #2b2f34;
             border: none;
             border-radius: 6px;
+            color: white;
             cursor: pointer;
+            font-size: 15px;
         }
 
         button:hover {
-            background: #3a3e43;
+            background: #3a3f45;
         }
 
         #viewer {
@@ -53,8 +52,8 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            padding: 8px 14px;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.7);
+            padding: 8px 12px;
             border-radius: 8px;
         }
     </style>
@@ -64,22 +63,22 @@
 
     <div id="sidebar">
         <h1>3D Model Viewer</h1>
+        <button id="reactorBtn">Reactor Vessel</button>
 
-        <button id="btn-reactor">Reactor Vessel</button>
+        <button id="centerBtn">Center View</button>
+        <button id="resetBtn">Reset Camera</button>
+        <button id="wireBtn">Toggle Wireframe</button>
+        <button id="autoBtn">Auto Rotate</button>
 
-        <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-
-        <button id="center">Center View</button>
-        <button id="reset">Reset Camera</button>
-        <button id="wireframe">Toggle Wireframe</button>
-        <button id="auto">Auto Rotate</button>
+        <h3>Scale</h3>
+        <input id="scaleRange" type="range" min="0.1" max="3" step="0.01" value="1" />
     </div>
 
     <div id="viewer">
         <div id="loading">Loading...</div>
     </div>
 
-    <!-- Modern ES-module CDN (RELIABLE) -->
+    <!-- Import your script as a module -->
     <script type="module" src="mainscript.js"></script>
 
 </body>
