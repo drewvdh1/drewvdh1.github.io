@@ -59,6 +59,13 @@ Reactor Vessel
 This reactor vessel model represents a high-pressure containment chamber commonly used in chemical, thermal, or nuclear processing systems.
 The rounded geometry distributes internal stresses uniformly, while the flange ports support instrumentation, coolant flow, and structural connections.
     `
+    "Steam_Generator.stl": `
+Steam Generator
+
+This steam generator model represents a vertical heat-exchange unit used to transfer thermal energy from the reactor’s primary coolant to the secondary water system.
+Its internal U-tube bundle maximizes surface area for efficient boiling, while the upper steam dome separates moisture before directing dry steam to the turbine.
+External nozzles support coolant circulation, pressure regulation, and maintenance access, making it a critical link between the reactor core and the power-conversion cycle.
+    `
 };
 
 // Fit model into camera view
