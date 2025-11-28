@@ -62,7 +62,7 @@ The rounded geometry distributes internal stresses uniformly, while the flange p
     "Steam_Generator.stl": `
 Steam Generator
 
-This steam generator model represents a vertical heat-exchange unit used to transfer thermal energy from the reactor’s primary coolant to the secondary water system.
+This steam generator model represents a vertical heat-exchange unit used to transfer thermal energy from the reactor's primary coolant to the secondary water system.
 Its internal U-tube bundle maximizes surface area for efficient boiling, while the upper steam dome separates moisture before directing dry steam to the turbine.
 External nozzles support coolant circulation, pressure regulation, and maintenance access, making it a critical link between the reactor core and the power-conversion cycle.
     `
