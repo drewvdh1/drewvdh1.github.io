@@ -1,10 +1,12 @@
-// THREE.js imports (unchanged)
+// THREE.js imports
 import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
 import { STLLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/STLLoader.js";
 
+// DOM elements
 const container = document.getElementById("viewer");
 const loadingText = document.getElementById("loading");
+const descriptionBox = document.getElementById("description-box");
 
 // Scene
 const scene = new THREE.Scene();
@@ -30,7 +32,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 
-// ✨ Lights — prettier aesthetic
+// Lights
 scene.add(new THREE.AmbientLight(0xffffff, 0.42));
 
 const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -42,11 +44,25 @@ const fillLight = new THREE.PointLight(0x3d91ff, 0.3, 600);
 fillLight.position.set(-80, 60, 40);
 scene.add(fillLight);
 
-// Loader
+// STL Loader
 const loader = new STLLoader();
+
 let currentMesh = null;
 
-// Fit model to view
+/* ==============================
+   DESCRIPTION TEXT (editable)
+   ============================== */
+const modelDescriptions = {
+    "reactor_vessel.stl": `
+Reactor Vessel
+
+This reactor vessel model represents a high-pressure containment chamber commonly used in chemical, thermal, or nuclear processing systems. The rounded geometry distributes internal stresses uniformly, while the flange ports support instrumentation, coolant flow, and structural connections.
+
+The perforated dome design suggests internal circulation or mixing functionality, with multiple inlet/outlet paths to regulate temperature, pressure, and reactant flow. This type of vessel is typically manufactured from high-strength alloys to withstand significant thermal and mechanical loading.
+    `
+};
+
+// Fit model into camera view
 function fitToView(mesh) {
     const box = new THREE.Box3().setFromObject(mesh);
     const size = box.getSize(new THREE.Vector3()).length();
@@ -63,7 +79,7 @@ function fitToView(mesh) {
     controls.update();
 }
 
-// Load STL
+// Load STL file
 function loadModel(filename) {
     loadingText.textContent = `Loading ${filename}...`;
 
@@ -72,7 +88,6 @@ function loadModel(filename) {
         geometry => {
             if (currentMesh) scene.remove(currentMesh);
 
-            // ✨ Prettier material
             const material = new THREE.MeshPhongMaterial({
                 color: 0xbfc3c7,
                 shininess: 140,
@@ -81,7 +96,7 @@ function loadModel(filename) {
 
             const mesh = new THREE.Mesh(geometry, material);
 
-            // Center mesh
+            // Center model
             geometry.computeBoundingBox();
             const center = new THREE.Vector3();
             geometry.boundingBox.getCenter(center);
@@ -91,31 +106,37 @@ function loadModel(filename) {
             currentMesh = mesh;
 
             fitToView(mesh);
+
             loadingText.textContent = `Loaded: ${filename}`;
         },
         undefined,
         err => {
-            console.error(err);
             loadingText.textContent = `Error loading ${filename}`;
+            console.error(err);
         }
     );
 }
 
-// Buttons
+// Sidebar buttons
 document.querySelectorAll(".model-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-        loadModel(btn.dataset.file);
+        const file = btn.dataset.file;
+
+        // Update description
+        descriptionBox.textContent = modelDescriptions[file] || "";
+
+        loadModel(file);
     });
 });
 
-// Resize
+// Resize handling
 window.addEventListener("resize", () => {
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
 });
 
-// Loop
+// Animation loop
 function animate() {
     requestAnimationFrame(animate);
     controls.update();

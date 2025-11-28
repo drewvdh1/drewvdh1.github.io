@@ -6,9 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <style>
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background: linear-gradient(135deg, #0d0f12, #1a1d21);
@@ -51,7 +49,6 @@
             font-size: 15px;
             transition: 0.18s ease;
         }
-
         .model-btn:hover {
             background: #2a2d31;
             transform: translateX(3px);
@@ -79,6 +76,28 @@
             box-shadow: 0 0 8px rgba(0,0,0,0.25);
         }
 
+        /* Description Box */
+        #description-box {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+
+            max-width: 350px;
+            padding: 14px 16px;
+
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid #222;
+            border-radius: 8px;
+            color: #ddd;
+
+            font-size: 14px;
+            line-height: 1.35;
+            letter-spacing: 0.2px;
+
+            backdrop-filter: blur(6px);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            white-space: pre-line;
+        }
     </style>
 </head>
 
@@ -87,18 +106,14 @@
     <div id="sidebar">
         <h1>3D Model Viewer</h1>
 
-        <button class="model-btn" data-file="reactor_vessel.stl">
-            Reactor Vessel
-        </button>
-
-        <!-- Additional model buttons stay optional -->
+        <button class="model-btn" data-file="reactor_vessel.stl">Reactor Vessel</button>
     </div>
 
     <div id="viewer">
         <div id="loading">Select a model to load...</div>
+        <div id="description-box"></div>
     </div>
 
-    <!-- Important: unchanged from your setup -->
     <script type="module" src="mainscript.js"></script>
 
 </body>
