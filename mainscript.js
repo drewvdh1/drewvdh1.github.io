@@ -57,8 +57,6 @@ const modelDescriptions = {
 Reactor Vessel
 
 This reactor vessel model represents a high-pressure containment chamber commonly used in chemical, thermal, or nuclear processing systems. The rounded geometry distributes internal stresses uniformly, while the flange ports support instrumentation, coolant flow, and structural connections.
-
-The perforated dome design suggests internal circulation or mixing functionality, with multiple inlet/outlet paths to regulate temperature, pressure, and reactant flow. This type of vessel is typically manufactured from high-strength alloys to withstand significant thermal and mechanical loading.
     `
 };
 
