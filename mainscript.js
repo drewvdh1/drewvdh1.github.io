@@ -1,11 +1,18 @@
+// mainscript.js (ES module version)
+
+// Import three.js and helpers from CDN as modules
+import * as THREE from 'https://unpkg.com/three@0.155.0/build/three.module.js';
+import { STLLoader } from 'https://unpkg.com/three@0.155.0/examples/jsm/loaders/STLLoader.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.155.0/examples/jsm/controls/OrbitControls.js';
+
 // ==============================
 // 1) EDIT THIS LIST TO ADD MODELS
 // ==============================
 const MODELS = [
     { name: "Reactor Vessel", file: "models/reactor_vessel.stl" },
     // Add more here:
-    // { name: "Pump", file: "pump.stl" },
-    // { name: "Nozzle", file: "nozzle.stl" },
+    // { name: "Pump", file: "models/pump.stl" },
+    // { name: "Nozzle", file: "models/nozzle.stl" },
 ];
 
 
@@ -30,7 +37,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(viewer.clientWidth, viewer.clientHeight);
 viewer.appendChild(renderer.domElement);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // Lights
@@ -46,7 +53,7 @@ let currentMesh = null;
 // ==============================
 // 3) Load STL Function
 // ==============================
-const loader = new THREE.STLLoader();
+const loader = new STLLoader();
 
 function loadModel(file) {
     loading.innerText = "Loading " + file + "...";
