@@ -1,9 +1,8 @@
-// THREE.js modules (same style as the YouTuber tutorial)
+// THREE.js imports (unchanged)
 import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
 import { STLLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/STLLoader.js";
 
-// DOM elements
 const container = document.getElementById("viewer");
 const loadingText = document.getElementById("loading");
 
@@ -18,31 +17,36 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     2000
 );
-camera.position.set(150, 120, 180);
+camera.position.set(180, 140, 210);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(container.clientWidth, container.clientHeight);
 container.appendChild(renderer.domElement);
 
 // Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.dampingFactor = 0.05;
 
-// Lights
-const ambient = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambient);
+// ✨ Lights — prettier aesthetic
+scene.add(new THREE.AmbientLight(0xffffff, 0.42));
 
-const directional = new THREE.DirectionalLight(0xffffff, 1);
-directional.position.set(80, 80, 140);
-scene.add(directional);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+dirLight.position.set(120, 140, 160);
+dirLight.castShadow = true;
+scene.add(dirLight);
 
-// STL Loader
+const fillLight = new THREE.PointLight(0x3d91ff, 0.3, 600);
+fillLight.position.set(-80, 60, 40);
+scene.add(fillLight);
+
+// Loader
 const loader = new STLLoader();
-
 let currentMesh = null;
 
-// Fit the model in view
+// Fit model to view
 function fitToView(mesh) {
     const box = new THREE.Box3().setFromObject(mesh);
     const size = box.getSize(new THREE.Vector3()).length();
@@ -51,31 +55,33 @@ function fitToView(mesh) {
     controls.target.copy(center);
 
     camera.position.copy(center);
-    camera.position.z += size * 1.8;
-    camera.position.x += size * 1.2;
+    camera.position.z += size * 1.9;
+    camera.position.x += size * 1.3;
     camera.position.y += size * 1.1;
 
     camera.updateProjectionMatrix();
     controls.update();
 }
 
-// Load STL file
+// Load STL
 function loadModel(filename) {
     loadingText.textContent = `Loading ${filename}...`;
 
     loader.load(
         `models/${filename}`,
-        (geometry) => {
+        geometry => {
             if (currentMesh) scene.remove(currentMesh);
 
+            // ✨ Prettier material
             const material = new THREE.MeshPhongMaterial({
-                color: 0xbbbbbb,
-                shininess: 80,
+                color: 0xbfc3c7,
+                shininess: 140,
+                specular: 0x3d91ff
             });
 
             const mesh = new THREE.Mesh(geometry, material);
 
-            // Center model
+            // Center mesh
             geometry.computeBoundingBox();
             const center = new THREE.Vector3();
             geometry.boundingBox.getCenter(center);
@@ -85,33 +91,31 @@ function loadModel(filename) {
             currentMesh = mesh;
 
             fitToView(mesh);
-
             loadingText.textContent = `Loaded: ${filename}`;
         },
         undefined,
-        (err) => {
-            loadingText.textContent = `Error loading ${filename}`;
+        err => {
             console.error(err);
+            loadingText.textContent = `Error loading ${filename}`;
         }
     );
 }
 
-// Sidebar model buttons
+// Buttons
 document.querySelectorAll(".model-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-        const file = btn.getAttribute("data-file");
-        loadModel(file);
+        loadModel(btn.dataset.file);
     });
 });
 
-// Resize handling
+// Resize
 window.addEventListener("resize", () => {
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
 });
 
-// Render loop
+// Loop
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
