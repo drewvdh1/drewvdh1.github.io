@@ -2,7 +2,7 @@
 // 1) EDIT THIS LIST TO ADD MODELS
 // ==============================
 const MODELS = [
-    { name: "Reactor Vessel", file: "reactor_vessel.stl" },
+    { name: "Reactor Vessel", file: "models/reactor_vessel.stl" },
     // Add more here:
     // { name: "Pump", file: "pump.stl" },
     // { name: "Nozzle", file: "nozzle.stl" },
