@@ -49,9 +49,8 @@ const loader = new STLLoader();
 
 let currentMesh = null;
 
-/* ==============================
-   DESCRIPTION TEXT (editable)
-   ============================== */
+// DESCRIPTION TEXT (editable)
+
 const modelDescriptions = {
     "reactor_vessel.stl": `
 Reactor Vessel
